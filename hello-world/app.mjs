@@ -1,28 +1,50 @@
-/**
- *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} event - API Gateway Lambda Proxy Input Format
- *
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
- * @param {Object} context
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- * 
- */
+import pkg from '@slack/bolt';
+const { App, AwsLambdaReceiver } = pkg;
 
-export const lambdaHandler = async (event, context) => {
-    try {
-        return {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello world',
-            })
+// Initialize your custom receiver
+const awsLambdaReceiver = new AwsLambdaReceiver({
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+});
+
+// Initializes your app with your bot token and app token
+const app = new App({
+  token: process.env.SLACK_BOT_TOKEN,
+  receiver: awsLambdaReceiver,
+});
+
+// Listens to incoming messages that contain "hello"
+app.message('hello', async ({ message, say }) => {
+  // say() sends a message to the channel where the event was triggered
+  await say({
+    blocks: [
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `Hey there <@${message.user}>!`
+        },
+        "accessory": {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "Click Me"
+          },
+          "action_id": "button_click"
         }
-    } catch (err) {
-        console.log(err);
-        return err;
-    }
+      }
+    ],
+    text: `Hey there <@${message.user}>!`
+  });
+});
 
-    return response
-};
+app.action('button_click', async ({ body, ack, say }) => {
+  // Acknowledge the action
+  await ack();
+  await say(`<@${body.user.id}> clicked the button`);
+});
+
+// Handle the Lambda function event
+export const lambdaHandler = async (event, context, callback) => {
+  const handler = await awsLambdaReceiver.start();
+  return handler(event, context, callback);
+}

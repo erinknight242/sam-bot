@@ -22,7 +22,7 @@ Resources:
           Type: Api
           Properties:
             Path: /slack/events
-            Method: get
+            Method: post
     Metadata:
       DockerTag: nodejs18.x-v1
       DockerContext: ./hello-world
