@@ -17,6 +17,10 @@ Resources:
       PackageType: Image
       Architectures:
         - x86_64
+      Environment:
+        Variables:
+          SLACK_BOT_TOKEN: ""
+          SLACK_SIGNING_SECRET: ""
       Events:
         HelloWorld:
           Type: Api
