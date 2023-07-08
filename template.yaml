@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  sam-bot
+  bot-ts
 
-  Sample SAM Template for sam-bot
+  Sample SAM Template for bot-ts
   
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -12,25 +12,32 @@ Globals:
 
 Resources:
   HelloWorldFunction:
-    Type: AWS::Serverless::Function
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      PackageType: Image
+      CodeUri: hello-world/
+      Handler: app.lambdaHandler
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       Environment:
         Variables:
+          NODE_ENV: ""
           SLACK_BOT_TOKEN: ""
           SLACK_SIGNING_SECRET: ""
       Events:
         HelloWorld:
-          Type: Api
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /slack/events
             Method: post
-    Metadata:
-      DockerTag: nodejs18.x-v1
-      DockerContext: ./hello-world
-      Dockerfile: Dockerfile
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - app.ts
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

@@ -1,10 +1,8 @@
-# sam-bot
+# ChatMMC
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
-- hello-world - Code for the application's Lambda function and Project Dockerfile.
-- events - Invocation events that you can use to invoke the function.
-- hello-world/tests - Unit tests for the application code.
+- slack - Code for the application's Lambda function written in TypeScript.
 - template.yaml - A template that defines the application's AWS resources.
 
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
@@ -15,69 +13,71 @@ The Serverless Application Model Command Line Interface (SAM CLI) is an extensio
 
 To use the SAM CLI, you need the following tools.
 
-* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- Node.js - [Install Node.js 18](https://nodejs.org/en/), including the NPM package management tool.
+- Docker Desktop or Rancher Desktop installed
 
-You may need the following for local testing.
-
-* Node.js - [Install Node.js 18](https://nodejs.org/en/), including the NPM package management tool.
-
-To build and deploy your application for the first time, run the following in your shell:
+To build and deploy your application to AWS for the first time, run the following in your shell:
 
 ```bash
 sam build
 sam deploy --guided
 ```
 
-The first command will build a docker image from a Dockerfile and then the source of your application inside the Docker image. The second command will package and deploy your application to AWS, with a series of prompts:
-
-* **Stack Name**: The name of the stack to deploy to CloudFormation. This should be unique to your account and region, and a good starting point would be something matching your project name.
-* **AWS Region**: The AWS region you want to deploy your app to.
-* **Confirm changes before deploy**: If set to yes, any change sets will be shown to you before execution for manual review. If set to no, the AWS SAM CLI will automatically deploy application changes.
-* **Allow SAM CLI IAM role creation**: Many AWS SAM templates, including this example, create AWS IAM roles required for the AWS Lambda function(s) included to access AWS services. By default, these are scoped down to minimum required permissions. To deploy an AWS CloudFormation stack which creates or modifies IAM roles, the `CAPABILITY_IAM` value for `capabilities` must be provided. If permission isn't provided through this prompt, to deploy this example you must explicitly pass `--capabilities CAPABILITY_IAM` to the `sam deploy` command.
-* **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
+The first command will build the source of your application. The second command will package and deploy your application to AWS, with a series of prompts.
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
 
+Set your Prod environment variables on the new function [in AWS](https://console.aws.amazon.com/lambda/home#/functions), and then configure Slack to point to the Endpoint URL in the Slack API settings for both the Interactivity & Shortcuts > Request URL (save changes), and then the Event Subscriptions > Request URL (should auto-verify).
+
 ## Use the SAM CLI to build and test locally
+
+- Prerequisite: [Install ngrok](https://ngrok.com/docs/getting-started/#step-2-install-the-ngrok-agent) so you can generate a public URL to configure in Slack
 
 Build your application with the `sam build` command.
 
 ```bash
-sam-bot$ sam build
+chatmmc$ sam build
 ```
 
-The SAM CLI builds a docker image from a Dockerfile and then installs dependencies defined in `hello-world/package.json` inside the docker image. The processed template file is saved in the `.aws-sam/build` folder.
-* **Note**: The Dockerfile included in this sample application uses `npm install` by default. If you are building your code for production, you can modify it to use `npm ci` instead.
+The SAM CLI can emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000, and include your local env vars to point to the correct Slack bot. You need to configure your local environment variables in a file named `env.json` at the root of the project, with the format:
 
-Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
+```{
+{
+  "ChatMmcFunction": {
+      "NODE_ENV": "development",
+      "SLACK_BOT_TOKEN": "<pulled from Slack configuration>",
+      "SLACK_SIGNING_SECRET": "<also from Slack configuration>"
+  }
+}
+```
 
-Run functions locally and invoke them with the `sam local invoke` command.
+Once you have your env vars set, start the bot locally with the following command:
 
 ```bash
-sam-bot$ sam local invoke HelloWorldFunction --event events/event.json
+chatmmc$ sam local start-api -n env.json
 ```
 
-The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
+In another command prompt, run ngrok to get a public URL for your local bot:
 
 ```bash
-sam-bot$ sam local start-api
-sam-bot$ curl http://localhost:3000/
+ngrok http 3000
 ```
 
-The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
+Copy the ngrok.io URL that it creates, add **/slack/events** to the end of it, and paste that in the Slack API settings for both the Interactivity & Shortcuts > Request URL (save changes), and then the Event Subscriptions > Request URL (should auto-verify).
+
+After saving changes, to see them reflected in your local bot, cancel the local API in the terminal with ctrl-C and run `sam build`, then `sam local start-api -n env.json` again. You do not need to restart ngrok or reconfigure the Slack URL between every change; just once per dev session.
 
 ```yaml
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /slack/events
-            Method: post
+Events:
+  ChatMmc:
+    Type: Api
+    Properties:
+      Path: /slack/events
+      Method: post
 ```
 
-## Add a resource to your application
-The application template uses AWS Serverless Application Model (AWS SAM) to define application resources. AWS SAM is an extension of AWS CloudFormation with a simpler syntax for configuring common serverless application resources such as functions, triggers, and APIs. For resources not included in [the SAM specification](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md), you can use standard [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) resource types.
+
 
 ## Fetch, tail, and filter Lambda function logs
 
@@ -86,19 +86,19 @@ To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs`
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-sam-bot$ sam logs -n HelloWorldFunction --stack-name sam-bot --tail
+chatmmc$ sam logs -n ChatMmcFunction --stack-name chatmmc --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
 
 ## Unit tests
 
-Tests are defined in the `hello-world/tests` folder in this project. Use NPM to install the [Mocha test framework](https://mochajs.org/) and run unit tests from your local machine.
+Tests are defined in the `slack/tests` folder in this project. Use NPM to install the [Jest test framework](https://jestjs.io/) and run unit tests.
 
 ```bash
-sam-bot$ cd hello-world
-hello-world$ npm install
-hello-world$ npm run test
+chatmmc$ cd slack
+slack$ npm install
+slack$ npm test
 ```
 
 ## Cleanup
@@ -106,7 +106,7 @@ hello-world$ npm run test
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
 
 ```bash
-aws cloudformation delete-stack --stack-name sam-bot
+aws cloudformation delete-stack --stack-name chatmmc
 ```
 
 ## Resources

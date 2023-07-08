@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@types/node": "^20.4.0"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.13.1"
+  }
+}

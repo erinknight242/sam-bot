@@ -4,9 +4,10 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "sam-bot"
+stack_name = "bot-ts"
 
 [default.build.parameters]
+cached = true
 parallel = true
 
 [default.validate.parameters]
@@ -16,11 +17,11 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
-resolve_image_repos = true
+stack_name = "chatmmc"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-126oc7da84yev"
-s3_prefix = "sam-bot"
+s3_prefix = "chatmmc"
 region = "us-east-2"
-image_repositories = ["HelloWorldFunction=492604706822.dkr.ecr.us-east-2.amazonaws.com/sambot9385960c/helloworldfunction19d43fc4repo"]
+image_repositories = []
 
 [default.package.parameters]
 resolve_s3 = true
