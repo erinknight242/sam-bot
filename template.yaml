@@ -11,10 +11,10 @@ Globals:
     Timeout: 3
 
 Resources:
-  HelloWorldFunction:
+  ChatMmcFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: hello-world/
+      CodeUri: slack/
       Handler: app.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
@@ -25,7 +25,7 @@ Resources:
           SLACK_BOT_TOKEN: ""
           SLACK_SIGNING_SECRET: ""
       Events:
-        HelloWorld:
+        ChatMmc:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /slack/events
@@ -43,12 +43,12 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+  ChatMmcApi:
+    Description: "API Gateway endpoint URL for Prod stage for ChatMMC function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/slack/events/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  ChatMmcFunction:
+    Description: "ChatMMC Lambda Function ARN"
+    Value: !GetAtt ChatMmcFunction.Arn
+  ChatMmcFunctionIamRole:
+    Description: "Implicit IAM Role created for ChatMMC function"
+    Value: !GetAtt ChatMmcFunctionRole.Arn

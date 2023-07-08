@@ -1,20 +1,27 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "emitDecoratorMetadata": true  ,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
     "target": "esnext",
     "removeComments": true,
-      "types": [
-        "jest"
-      ]
+    "types": [
+      "jest"
+    ]
   },
-  "include": ["hello-world/**/*", 
-  "tests/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "slack/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
